@@ -11,6 +11,16 @@ Route::get('/', function () {
     return Inertia::render('Home', ['site' => $site]);
 });
 
+// Lightweight health probe the deploy pipeline hits to verify the LIVE app + database are up,
+// migrations ran and the admin was seeded (users >= 1). Public on purpose.
+Route::get('/health', function () {
+    try {
+        return response()->json(['ok' => true, 'users' => \App\Models\User::count()]);
+    } catch (\Throwable $e) {
+        return response()->json(['ok' => false, 'error' => 'db'], 503);
+    }
+});
+
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
